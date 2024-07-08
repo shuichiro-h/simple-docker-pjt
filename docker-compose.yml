@@ -1,0 +1,33 @@
+version: '3'
+# 何も考えず３を指定
+
+services:
+  app:
+    build:
+      context: ./app
+      # docker-compose.ymlから見て./appにあるDockerfileにしたがってビルドする
+    container_name: express-app
+    # 一応コンテナ名をつける
+    ports:
+      - '3000:3000'
+      # docker run -p 3000:3000 app と一緒
+    volumes:
+      - './app:/usr/src/app'
+      # ローカルPCの./appフォルダと、コンテナ内の ~/usr/src/appフォルダを同期させる。
+      # docker exec -it express-app sh で確認できる
+
+  web:
+    image: nginx:latest 
+    #nginx:alpilneだとエラーが起きるので、一応最新版で対応。
+    container_name: nginx-web
+    ports:
+      - '80:80'
+    volumes:
+      - './web/reverse_proxy/nginx.conf:/etc/nginx/nginx.conf'
+      # ローカルPCの./web/reverse_proxy/nginx.confと、コンテナ内の ~/etc/nginx/nginx.confを同期させる。
+      # ~/etc/nginx/nginx.confは場所指定。
+    links:
+      - app
+    depends_on:
+      - app
+      # appコンテナが起動しないと機能しない、という依存関係を明記。
